@@ -1,0 +1,42 @@
+private void _PaintOutsideAvgTop(int top, GUIGlassDepthAverage avg, bool isCommon, bool all)
+{
+    CanvasRender.RectangleEdgeFilter connerFilter = CanvasRender.RectangleEdgeFilter.All;
+    int r = GP.Y4;
+    int thickness = GP.Y1;
+
+    Color frameColor = isCommon ? (_CommonAverage.IsProfit ? pAvgBackProfitBackground : pAvgBackLossBackground)
+                                : (_RemainsAverage.IsProfit ? pAvgFrontProfitBackground : pAvgFrontLossBackground);
+
+    IntRect frameRect = new IntRect(new IntPoint(0, top), new IntSize(bWidth, height));
+    _parallelBuffer.FillRectangle(frameRect, pOutsideBackground); 
+    _parallelBuffer.DrawRoundedRectangle(frameRect, r, frameColor, thickness, connerFilter);
+
+    // Тексты
+    // Определяем цвет текста для цены
+    Color priceColor = pOutsideTextColor;
+
+    int textTop = GetTextTop(top);
+    
+    // Рисуем стрелочку
+    int arrowMarginVertical = GP.Y2; 
+    int arrowMarginHorizontal = GP.X2;
+
+    int svgHash = HashCode.Combine(IconVars.SvgUpRow, priceColor, pOutsideBackground);
+    IntRect arrowRect = new IntRect(new IntPoint(arrowMarginHorizontal, top + arrowMarginVertical), new IntSize(GP.X10, GP.X10));
+
+    if (!_bmpCache.ContainsKey(svgHash))
+    {
+        BitMap bmp = new BitMap(arrowRect.Width, arrowRect.Height, pOutsideBackground);
+        bmp.FillSVG(new IntRect(new IntPoint(0, 0), new IntSize(arrowRect.Width, arrowRect.Height)), IconVars.SvgUpRow, pOutsideTextColor);
+        _bmpCache.TryAdd(svgHash, bmp);
+        _parallelBuffer.FillBitMap(arrowRect.Left, arrowRect.Top, bmp, false);
+    }
+    _parallelBuffer.FillBitMap(arrowRect.Left, arrowRect.Top, _bmpCache[svgHash], false);
+
+    // Рисуем текст цены
+    string price = avg.InnerPrice.ToSpacesZString(ScrollInfo.ActualPricePrecision);
+    int spaceBetweenArrowAndText = GP.X4;
+    int textLeft = arrowRect.Right + spaceBetweenArrowAndText; 
+
+    _parallelBuffer.DrawString(textLeft, textTop, priceColor, _font, price);
+}

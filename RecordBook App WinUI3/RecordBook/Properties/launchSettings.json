@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "RecordBook (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "RecordBook (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
